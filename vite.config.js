@@ -5,7 +5,7 @@ import path from 'path'
 export default defineConfig({
     plugins: [vue()],
     root: 'web',
-    base: './',
+    base: '/qqfarmbot/',
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'web/src'),
@@ -19,10 +19,11 @@ export default defineConfig({
         host: '127.0.0.1',
         port: 5173,
         proxy: {
-            '/socket.io': {
-                target: 'http://localhost:3000',
+            '/qqfarmbot/ws': {
+                target: 'http://localhost:18084',
                 ws: true,
                 changeOrigin: true,
+                rewrite: () => '/ws',
             },
         },
     },

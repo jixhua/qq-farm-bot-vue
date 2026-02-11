@@ -4,8 +4,9 @@ const path = require('path');
 const bot = require('./bot');
 const {registerIPC, deployIPC} = require('./ipc');
 
-// 静态服务器
+// 静态服务器（/ws 由 WebSocket 处理）
 const server = http.createServer((req, res) => {
+    if (req.url === '/ws' || req.url?.startsWith('/ws?')) return;
     let filePath = path.join(__dirname, '../dist', req.url === '/' ? 'index.html' : req.url);
     fs.readFile(filePath, (err, content) => {
         if (err) {
@@ -29,8 +30,8 @@ async function main() {
     registerIPC(server);
     await bot.init();
 
-    server.listen(3000, () => {
-        console.log('🚀 服务运行在 http://localhost:3000');
+    server.listen(18084, () => {
+        console.log('🚀 服务运行在 http://localhost:18084');
     });
 }
 

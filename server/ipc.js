@@ -1,100 +1,70 @@
 /**
- * IPC 通道处理
- * 注册所有 ipcMain.handle 通道，调用 bot.js 并返回结果
- * 将 bot.js 事件推送到渲染进程
+ * WebSocket 通道 - 替代 Socket.IO，更简单的路径配置
  */
-const {Server} = require('socket.io');
+const { WebSocketServer } = require('ws');
 const bot = require('./bot');
 
-let io = null;
+let wss = null;
+const WS_PATH = '/ws';
 
-function handle(socket, ev, cb) {
-    if (!io)
-        throw new Error('IPC 尚未初始化');
-    socket.on(ev, async (data, ioCb) => {
-        try {
-            ioCb(await cb(data));
-        } catch (e) {
-            ioCb({success: false, error: e.message,});
-        }
+// 命令映射
+const HANDLERS = {
+    'bot:connect': async (d) => await bot.botConnect(d.code, d.platform),
+    'bot:disconnect': () => bot.botDisconnect(),
+    'bot:status': () => bot.getStatus(),
+    'bot:feature-toggle': (d) => bot.setFeatureEnabled(d.feature, d.enabled),
+    'bot:get-config': () => bot.getConfig(),
+    'bot:save-config': (d) => bot.saveConfig(d),
+    'bot:get-plant-plan': () => bot.getPlantPlan(),
+    'bot:get-logs': () => bot.getLogs(),
+    'bot:clear-logs': () => { bot.clearLogs(); return { success: true }; },
+};
+
+function broadcast(msg) {
+    if (!wss) return;
+    const data = JSON.stringify(msg);
+    wss.clients.forEach((client) => {
+        if (client.readyState === 1) client.send(data);
     });
 }
 
-/**
- * 注册所有 IPC 通道
- */
 function registerIPC(server) {
-    io = new Server(server);
+    wss = new WebSocketServer({ server, path: WS_PATH });
 
-    io.on('connection', (socket) => {
-        console.log('👤 用户连接:', socket.id);
-        // socket.onAny((event, ...args) => {
-        //     console.log(`[收到消息] 来自: ${socket.id} | 事件: ${event} | 数据:`, args);
-        // });
+    wss.on('connection', (ws, req) => {
+        console.log('👤 WebSocket 连接:', req.socket.remoteAddress);
 
-        // === 请求/响应通道 ===
+        ws.on('message', async (raw) => {
+            try {
+                const msg = JSON.parse(raw.toString());
+                if (msg.t !== 'req' || !msg.id || !msg.ch) return;
 
-        handle(socket, 'bot:connect', async ({code, platform}) => {
-            return await bot.botConnect(code, platform);
-        });
+                const fn = HANDLERS[msg.ch];
+                if (!fn) {
+                    ws.send(JSON.stringify({ t: 'res', id: msg.id, ok: false, err: 'unknown channel' }));
+                    return;
+                }
 
-        handle(socket, 'bot:connect', async ({code, platform}) => {
-            return await bot.botConnect(code, platform);
-        });
-
-        handle(socket, 'bot:disconnect', () => {
-            return bot.botDisconnect();
-        });
-
-        handle(socket, 'bot:status', () => {
-            return bot.getStatus();
-        });
-
-        handle(socket, 'bot:feature-toggle', ({feature, enabled}) => {
-            return bot.setFeatureEnabled(feature, enabled);
-        });
-
-        handle(socket, 'bot:get-config', () => {
-            return bot.getConfig();
-        });
-
-        handle(socket, 'bot:save-config', (partial) => {
-            return bot.saveConfig(partial);
-        });
-
-        handle(socket, 'bot:get-plant-plan', () => {
-            return bot.getPlantPlan();
-        });
-
-        handle(socket, 'bot:get-logs', () => {
-            return bot.getLogs();
-        });
-
-        handle(socket, 'bot:clear-logs', () => {
-            bot.clearLogs();
-            return {success: true};
+                const result = await fn(msg.d || {});
+                ws.send(JSON.stringify({ t: 'res', id: msg.id, ok: true, d: result }));
+            } catch (e) {
+                const id = (() => { try { const m = JSON.parse(raw.toString()); return m?.id; } catch { return null; } })();
+                if (id != null) {
+                    ws.send(JSON.stringify({ t: 'res', id, ok: false, err: e.message }));
+                }
+            }
         });
     });
 
-    // === 主进程 → 渲染进程推送 ===
-
-    bot.botEvents.on('log', (entry) => {
-        if (!io)
-            throw new Error('IPC 尚未初始化');
-        io.emit('bot:log', entry);
-    });
-
-    bot.botEvents.on('status-update', (status) => {
-        if (!io)
-            throw new Error('IPC 尚未初始化');
-        io.emit('bot:status-update', status);
-    });
+    bot.botEvents.on('log', (entry) => broadcast({ t: 'ev', ch: 'bot:log', d: entry }));
+    bot.botEvents.on('status-update', (status) => broadcast({ t: 'ev', ch: 'bot:status-update', d: status }));
 }
 
 async function deployIPC() {
-    if (!io) return;
-    await new Promise(resolve => io.close(resolve));
-    io = null;
+    if (!wss) return;
+    const s = wss;
+    wss = null;
+    await new Promise((resolve) => s.close(resolve));
 }
 
-module.exports = {registerIPC, deployIPC};
+module.exports = { registerIPC, deployIPC };
