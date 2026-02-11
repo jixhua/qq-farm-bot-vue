@@ -111,7 +111,8 @@ onMounted(() => {
 
 .filter-bar {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   margin-bottom: 8px;
   --el-checkbox-text-color: var(--color-text);
 }

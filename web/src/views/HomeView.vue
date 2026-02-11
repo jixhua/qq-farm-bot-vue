@@ -405,6 +405,50 @@ watch(() => status.connected, (val) => {
   font-size: 13px;
 }
 
+@media (max-width: 768px) {
+  .status-cards {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .card {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    padding: 10px 12px;
+  }
+
+  .card-value {
+    font-size: 16px;
+  }
+
+  .login-row {
+    flex-direction: column;
+  }
+
+  .feature-grid {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .plant-plan .plan-info {
+    font-size: 12px;
+  }
+
+  .plan-mode {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .plant-select {
+    width: 100%;
+  }
+
+  .section-title {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
 .recent-logs {
   font-family: 'Consolas', monospace;
   font-size: 13px;

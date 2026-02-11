@@ -73,6 +73,7 @@ if (window.electronAPI) {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   background-color: var(--bg-primary);
 }
 
@@ -155,5 +156,44 @@ if (window.electronAPI) {
 .titlebar-title {
   font-size: 13px;
   color: var(--color-text-secondary);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 0;
+    order: 2;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-items {
+    flex-direction: row;
+    flex: 1;
+    justify-content: space-around;
+    gap: 0;
+  }
+
+  .nav-item {
+    flex: 1;
+    max-width: 64px;
+    height: 52px;
+    border-radius: 0;
+  }
+
+  .sidebar-bottom {
+    padding: 0 12px;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .content {
+    padding: 12px;
+    padding-bottom: env(safe-area-inset-bottom, 12px);
+  }
 }
 </style>

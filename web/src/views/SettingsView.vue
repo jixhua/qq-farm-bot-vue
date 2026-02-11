@@ -135,6 +135,40 @@ watch(() => status.connected, (val) => {
   font-size: 13px;
 }
 
+@media (max-width: 768px) {
+  .config-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .config-label {
+    width: auto;
+  }
+
+  .config-unit {
+    margin-left: 0;
+  }
+
+  .section-title {
+    flex-wrap: wrap;
+  }
+
+  .level-hint {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .dark-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dark-table :deep(.el-table) {
+    min-width: 400px;
+  }
+}
+
 .config-unit {
   font-size: 12px;
   color: var(--color-text-secondary);
