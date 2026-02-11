@@ -59,7 +59,7 @@
         </div>
         <div class="feature-group">
           <div class="group-title">好友农场</div>
-          <div class="feature-item" v-for="f in friendFeatures" :key="f.key" :class="{ 'indent': f.indent }">
+          <div class="feature-item" v-for="f in friendFeatures" :key="f.key"">
             <div class="feature-label">
               <span :class="{ 'master-label': f.isMaster }">{{ f.label }}</span>
               <el-tooltip v-if="f.desc" :content="f.desc" placement="top">

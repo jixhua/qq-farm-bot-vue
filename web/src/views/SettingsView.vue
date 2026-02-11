@@ -21,15 +21,16 @@
     </div>
 
     <!-- 种植效率排行 -->
-    <div class="section">
+    <div class="section table-section">
       <div class="section-title">
         种植效率排行
         <span class="level-hint" v-if="plantPlan">基于当前等级(Lv{{ plantPlan.currentLevel }})可购买作物计算</span>
       </div>
-      <el-table :data="plantPlan?.options || []" size="small" class="dark-table"
-        :row-class-name="rowClassName" max-height="300">
+      <div class="table-wrapper">
+        <el-table :data="plantPlan?.options || []" size="small" class="dark-table"
+          :row-class-name="rowClassName" height="100%" style="width: 100%">
         <el-table-column prop="rank" label="排名" width="60" align="center" />
-        <el-table-column prop="name" label="作物" width="100" />
+        <el-table-column prop="name" label="作物" min-width="100" />
         <el-table-column label="生长时间" width="100" align="center">
           <template #default="{ row }">{{ row.growTimeWithFert }}秒</template>
         </el-table-column>
@@ -39,7 +40,8 @@
         <el-table-column label="推荐" width="60" align="center">
           <template #default="{ row }">{{ row.rank === 1 ? '★' : '' }}</template>
         </el-table-column>
-      </el-table>
+        </el-table>
+      </div>
       <div v-if="!plantPlan" class="empty-hint">登录后查看种植效率排行</div>
     </div>
   </div>
@@ -95,12 +97,34 @@ watch(() => status.connected, (val) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: hidden;
+}
+
+.table-section {
+  flex: 1;
+  flex-shrink: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.table-section .section-title {
+  flex-shrink: 0;
+}
+
+.table-wrapper {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .section {
   background: var(--bg-card);
   border-radius: 8px;
   padding: 12px 16px;
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -159,13 +183,14 @@ watch(() => status.connected, (val) => {
     margin-top: 4px;
   }
 
-  .dark-table {
+  .table-wrapper {
     overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
   }
 
   .dark-table :deep(.el-table) {
-    min-width: 400px;
+    min-width: 420px;
   }
 }
 

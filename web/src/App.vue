@@ -3,12 +3,7 @@
     <!-- 自定义标题栏 -->
     <div class="titlebar">
       <span class="titlebar-title">QQ经典农场助手</span>
-      <!--
-      <div class="titlebar-buttons">
-        <button class="titlebar-btn" @click="minimize">─</button>
-        <button class="titlebar-btn close" @click="close">✕</button>
-      </div>
-      -->
+      <div class="status-dot" :class="statusClass" :title="statusText"></div>
     </div>
 
     <!-- 主体区域 -->
@@ -26,9 +21,6 @@
           >
             <span class="nav-icon">{{ item.icon }}</span>
           </div>
-        </div>
-        <div class="sidebar-bottom">
-          <div class="status-dot" :class="statusClass" :title="statusText"></div>
         </div>
       </div>
 
@@ -124,12 +116,6 @@ if (window.electronAPI) {
   font-size: 20px;
 }
 
-.sidebar-bottom {
-  padding: 16px 0;
-  display: flex;
-  justify-content: center;
-}
-
 .status-dot {
   width: 12px;
   height: 12px;
@@ -149,8 +135,23 @@ if (window.electronAPI) {
 
 .content {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   padding: 16px;
+}
+
+.content > * {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
 }
 
 .titlebar-title {
@@ -184,11 +185,6 @@ if (window.electronAPI) {
     max-width: 64px;
     height: 52px;
     border-radius: 0;
-  }
-
-  .sidebar-bottom {
-    padding: 0 12px;
-    border-left: 1px solid var(--color-border);
   }
 
   .content {
